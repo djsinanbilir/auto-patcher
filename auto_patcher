@@ -142,9 +142,6 @@ CURRENT_ANDROID="4.2.2"
 # pass variables to children
 set -a
 
-#declare some variables
-apk_was_copied=false
-
 printusage_help () {
      PID="openpdroid,3gdongle" # default example
      brief_help
@@ -555,11 +552,11 @@ mods_info () {
      COMPATC=${CEILING//[.]/}
 }
 
-apk_check () {
+apk_copy () {
      if [ -f patches/$P/$A/$R/$B/$FILE ]; then
+          echo "### prepatched apk copying ##" >> "$LOG"
           \cp -av patches/$P/$A/$R/$B/$FILE $FILE >> "$LOG"
           echo "... Patching $APK failed, but we have successfuly copied over a prepatched file ..."
-          apk_was_copied=true
      else
           print_error "failed patching $APK!!!"
      fi
@@ -1181,6 +1178,8 @@ for P in ${PID[@]}; do
           system/*.apk)
                [[ ${AID[@]} =~ $FILE ]] || AID=(${AID[@]} $FILE)
                echo "set_perm(0, 0, 0644, \"/$FILE\");" >> UPDATE.txt
+               # $APKID will have elements removed sometimes--$AID is the master list for the update.zip
+               declare -a APKID=( "${AID[@]}" )
                ;;
           *.img)
                [[ ${IID[@]} =~ $FILE ]] || IID=(${IID[@]} $FILE)
@@ -1459,7 +1458,10 @@ for P in ${PID[@]}; do
                printtask "... apply $APK.patch ..."
                patch -Nls -p2 -d tmp/${FILE}.out < $PARB/${APK}.patch 2>&1 >> ${APK}.log
                cat ${APK}.log | tee -a "$LOG"
-               [[ `grep FAILED ${APK}.log` != "" ]] && apk_check
+               if [[ `grep FAILED ${APK}.log` != "" ]]; then
+                    apk_copy
+                    declare -a APKID=( ${APKID[@]/$FILE/} )
+               fi
                garbage tmp/${FILE}.out
           else
                echo "No $APK in your ROM. Not able to patch this file."
@@ -1527,18 +1529,19 @@ for FILE in ${JID[@]}; do
      fi
 done
 
-# Check if prepatched app was copied over in apk_check before rebuilding
-if !("$apk_was_copied"); then
-     [[ -n ${AID[@]} ]] && printtask "### rebuild apk ###"
-     for FILE in ${AID[@]}; do
-         APK=${FILE##*/}
-         if [ -d tmp/${FILE}.out ]; then
-              printtask "... rebuild $APK ..."
-             java -jar apktool.jar b tmp/${FILE}.out >> "$LOG" 2>> "$LOG" || apk_check
-             [[ !("$apk_was_copied") ]] && jar -uvf $FILE -C tmp/${FILE}.out/build/apk/ . > /dev/null 2>> "$LOG"
-         fi
-     done
-fi
+# Using APKID instead of AID because APKID removed any element that doesn't need a rebuild
+[[ -n ${APKID[@]} ]] && printtask "### rebuild apk ###"
+for FILE in ${APKID[@]}; do
+    APK=${FILE##*/}
+    if [ -d tmp/${FILE}.out ]; then # potentially change to 'for' loop so an 'apk_copy' can break the loop.
+    for FILE in $FILE; do #always once- so we can break the loop and stop rebuild if apk_copy is called
+        printtask "... rebuild $APK ..."
+        java -jar apktool.jar b tmp/${FILE}.out >> "$LOG" 2>> "$LOG" || apk_copy && break
+        jar -uvf $FILE -C tmp/${FILE}.out/build/apk/ . > /dev/null 2>> "$LOG"
+    done
+    fi
+done
+
 
 [[ -n ${IID[@]} ]] && printtask "### rebuild img ###"
 for FILE in ${IID[@]}; do
