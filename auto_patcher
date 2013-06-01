@@ -1176,6 +1176,8 @@ for P in ${PID[@]}; do
           system/*.apk)
                [[ ${AID[@]} =~ $FILE ]] || AID=(${AID[@]} $FILE)
                echo "set_perm(0, 0, 0644, \"/$FILE\");" >> UPDATE.txt
+               # $APKID will have elements removed sometimes--$AID is the master list for the update.zip
+               declare -a APKID=( "${AID[@]}" )
                ;;
           *.img)
                [[ ${IID[@]} =~ $FILE ]] || IID=(${IID[@]} $FILE)
@@ -1454,7 +1456,10 @@ for P in ${PID[@]}; do
                printtask "... apply $APK.patch ..."
                patch -Nls -p2 -d tmp/${FILE}.out < $PARB/${APK}.patch 2>&1 >> ${APK}.log
                cat ${APK}.log | tee -a "$LOG"
-               [[ `grep FAILED ${APK}.log` != "" ]] && apk_check
+               if [[ `grep FAILED ${APK}.log` != "" ]]; then
+                    apk_check
+                    declare -a APKID=( ${APKID[@]/$FILE/} )
+               fi
                garbage tmp/${FILE}.out
           else
                echo "No $APK in your ROM. Not able to patch this file."
@@ -1522,12 +1527,12 @@ for FILE in ${JID[@]}; do
      fi
 done
 
-[[ -n ${AID[@]} ]] && printtask "### rebuild apk ###"
-for FILE in ${AID[@]}; do
+[[ -n ${APKID[@]} ]] && printtask "### rebuild apk ###"
+for FILE in ${APKID[@]}; do
      APK=${FILE##*/}
      if [ -d tmp/${FILE}.out ]; then
           printtask "... rebuild $APK ..."
-          java -jar apktool.jar b tmp/${FILE}.out >> "$LOG" 2>> "$LOG" || apk_check
+          java -jar apktool.jar b tmp/${FILE}.out >> "$LOG" 2>> "$LOG"
           jar -uvf $FILE -C tmp/${FILE}.out/build/apk/ . > /dev/null 2>> "$LOG"
      fi
 done
