@@ -551,10 +551,11 @@ mods_info () {
      COMPATC=${CEILING//[.]/}
 }
 
-apk_check () {
+apk_copy () {
      if [ -f patches/$P/$A/$R/$B/$FILE ]; then
           echo "... Patching $APK failed, but we will copy over a prepatched file ..."
           \cp -av patches/$P/$A/$R/$B/$FILE $FILE >> "$LOG"
+          apk_was_copied=true
      else
           print_error "failed patching $APK!!!"
      fi
@@ -1457,7 +1458,7 @@ for P in ${PID[@]}; do
                patch -Nls -p2 -d tmp/${FILE}.out < $PARB/${APK}.patch 2>&1 >> ${APK}.log
                cat ${APK}.log | tee -a "$LOG"
                if [[ `grep FAILED ${APK}.log` != "" ]]; then
-                    apk_check
+                    apk_copy
                     declare -a APKID=( ${APKID[@]/$FILE/} )
                fi
                garbage tmp/${FILE}.out
@@ -1531,9 +1532,12 @@ done
 for FILE in ${APKID[@]}; do
      APK=${FILE##*/}
      if [ -d tmp/${FILE}.out ]; then
+          apk_was_copied=false
           printtask "... rebuild $APK ..."
-          java -jar apktool.jar b tmp/${FILE}.out >> "$LOG" 2>> "$LOG"
-          jar -uvf $FILE -C tmp/${FILE}.out/build/apk/ . > /dev/null 2>> "$LOG"
+          java -jar apktool.jar b tmp/${FILE}.out >> "$LOG" 2>> "$LOG" || apk_copy
+          if !("$apk_was_copied"); then
+             jar -uvf $FILE -C tmp/${FILE}.out/build/apk/ . > /dev/null 2>> "$LOG"
+          fi
      fi
 done
 
