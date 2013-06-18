@@ -144,7 +144,7 @@ CURRENT_ANDROID="4.2.2"
 # pass variables to children
 set -a
 
-# Config file
+# Config file: For now hosting AUTO_UPDATE and PRODUCTION(currently unused). Not under version control.
 if [ ! -f .config ]; then
      cp -v patch_tools/ap_scripts/config_template .config >> "$LOG"
 fi
@@ -397,7 +397,7 @@ askconsent () {
 no_network_access () {
      printtask "Check for update failed, probably because of no internet access."
      echo "The autopatcher will continue with current local version: $VERSION"
-     ping -c1 www.github.com &>> "$LOG" # test for the site 
+     ping -c1 www.github.com &>> "$LOG" # test for the site
      ping -c1 www.google.com &>> "$LOG" # test for internet in general
      NETWORK=false
      echo ""
@@ -409,7 +409,7 @@ auto_update_error () {
      printtask "### Update failed ###"
      printtask ""
      printtask "It appears you may have made some changes to the script that prevent automatic updating."
-     printtask "You could either run 'git reset --hard' to return the autopatcher to its original form"
+     printtask "You could run 'git reset --hard' to return the autopatcher to its original form"
      printtask " or set AUTO_UPDATE to false in the .config file to stop getting this message."
      echo ""
      printusage_help
@@ -999,7 +999,7 @@ echo "ROMX= $ROMX" >> "$LOG"
 
 # add auto_updating information to current log
 if [[ -n "$AUTO_PATCHER_WAS_UPDATED" ]]; then
-     cat .updated.log >> "$LOG" || echo "Couldn't find .updated.log, something isn't working" 2>&1 >> "$LOG"
+     cat .updated.log >> "$LOG"
      rm -If .updated.log
 fi
 
@@ -1026,6 +1026,7 @@ if [ -z "$NETWORK" ] && ($AUTO_UPDATE); then
                AUTO_PATCHER_WAS_UPDATED=true
                printtask "### Rerunning script with latest version ###"
                cp -a "$LOG" .updated.log
+               rm -If "$LOG"
                $0 "$@" # runs script with same parameters
                exit 0  # ends current run of script
                ;;
@@ -1037,7 +1038,6 @@ fi
 if [[ -n "$AUTO_PATCHER_WAS_UPDATED" ]]; then
      if [[ $PATCHES_VERSION -gt $AUTO_PATCHER_OLD_PATCHES_VERSION ]]; then
           echo "... Integrating new patches ..."
-          echo ""
           sh batch.sh >> /dev/null 2>> "$LOG"
      fi
 fi
