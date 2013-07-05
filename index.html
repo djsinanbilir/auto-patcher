@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Auto-patcher : smali editor that ports mods and themes across roms and devices" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Auto-patcher</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/djsinanbilir/auto-patcher">View on GitHub</a>
+
+          <h1 id="project_title">Auto-patcher</h1>
+          <h2 id="project_tagline">smali editor that ports mods and themes across roms and devices</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/djsinanbilir/auto-patcher/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/djsinanbilir/auto-patcher/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>Auto-Patcher
+    authored by pastime1971 and mateor(od)</p>
+
+<p>A smali patcher that ports mods and themes across roms and devices. Extracts, decompiles/unpacks, patches, recompiles/repack, and outputs a flashable zip.</p>
+
+<p>Requirements for execution
+   -jdk, cpio, patch</p>
+
+<p>Designed to run on Linux, OSX and Windows (using Cygwin)</p>
+
+<p>The main script expects the patches and patch_tools folders to be compressed. pastime has whipped up a script that gets you ready to use the program:</p>
+
+<p>$./batch.sh</p>
+
+<p>For usage and patch availability, place a rom.zip into this directory and try</p>
+
+<p>$./auto_patcher .zip -h</p>
+
+<p>This will check our various dependancies and provide some useful information.</p>
+
+<p>To patch a ROM, 
+$./auto_patcher .zip </p>
+
+<p>where: </p>
+
+<ul>
+<li>ROMNAME is the literal name of the Rom.</li>
+<li>MODTYPE would be a list of offered mods (as seen in the -h menu), separated by 
+commas and NO SPACES.</li>
+<li>ROMTYPE is cm7,cm9,cm10,aokp,aokp-jb,aosp or aosp-jb.</li>
+<li>PATCHDATE is the date the patch was made, pick the one right before your build 
+date from the available patches.</li>
+</ul><p>example:
+$./auto_patcher cm-10-OFFICIAL-20120820-grouper.zip pdroid,v6supercharger cm10 20120824</p>
+
+<p>See our thread on XDA:</p>
+
+<p><a href="http://forum.xda-developers.com/showthread.php?p=27589651#27589651">http://forum.xda-developers.com/showthread.php?p=27589651#27589651</a></p>
+
+<p>If you are a developer who has a mod you would like supported, you can email me at the 
+address registered here at github or pm either of us on XDA.</p>
+
+<p>We can support changes to boot.img, system.jars, apks and copy over files and/or img's!</p>
+
+<p>Pull requests are treasured!</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Auto-patcher maintained by <a href="https://github.com/djsinanbilir">djsinanbilir</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
